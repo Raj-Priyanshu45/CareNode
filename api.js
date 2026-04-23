@@ -1,6 +1,8 @@
-const BASE_URL = __DEV__
-  ? 'http://172.23.199.47:8080/api'   // physical phone
-  : 'https://your-railway-url.com/api'; // production
+import Constants from 'expo-constants';
+
+const BASE_URL =
+  Constants.expoConfig?.extra?.BASE_URL ||
+  (__DEV__ ? 'http://10.0.2.2:8080/api' : 'https://your-railway-url.com/api');
 
 export async function login(username, password) {
   const response = await fetch(`${BASE_URL}/auth/login`, {

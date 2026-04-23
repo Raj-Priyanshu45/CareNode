@@ -176,8 +176,8 @@ export default function EncounterScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 10,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 20,

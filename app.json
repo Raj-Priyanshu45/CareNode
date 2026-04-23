@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "CareNode",
+    "slug": "carenode-mobile",
+    "version": "1.0.0",
+    "android": {
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA"
+      ]
+    }
+  }
+}
