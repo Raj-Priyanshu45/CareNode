@@ -18,6 +18,11 @@ public class Patient {
     @Column(columnDefinition = "jsonb")
     private String fhirResource;
 
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
     private LocalDateTime createdAt;
 
     private LocalDateTime syncedAt;

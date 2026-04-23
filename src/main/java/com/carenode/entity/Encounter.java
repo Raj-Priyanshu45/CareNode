@@ -39,6 +39,11 @@ public class Encounter {
     @Enumerated(EnumType.STRING)
     private SyncStatus syncStatus = SyncStatus.PENDING;
 
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
     private LocalDateTime createdAt;
 
     private LocalDateTime syncedAt;

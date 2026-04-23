@@ -36,7 +36,7 @@ public class TriageEngine {
         }
 
         // Demographics
-        if (data.isPregnant()) {
+        if (Boolean.TRUE.equals(data.getPregnant())) {
             score += 15;
             rationale.put("pregnant", "Pregnancy risk factor");
         }
@@ -84,6 +84,7 @@ public class TriageEngine {
         public void setPrediction(String prediction) { this.prediction = prediction; }
         public Boolean getPregnant() { return pregnant; }
         public void setPregnant(Boolean pregnant) { this.pregnant = pregnant; }
+        public boolean isPregnant() { return Boolean.TRUE.equals(pregnant); }
         public Integer getAge() { return age; }
         public void setAge(Integer age) { this.age = age; }
     }

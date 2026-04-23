@@ -5,6 +5,10 @@
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/auth/JwtAuthenticationFilter.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/auth/JwtUtil.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/auth/SecurityConfig.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/common/CloudinaryConfig.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/common/CloudinaryService.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/common/CorsConfig.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/diagnostic/DiagnosticController.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/encounter/EncounterController.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/entity/Diagnostic.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/entity/Encounter.java
@@ -12,10 +16,13 @@
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/entity/SyncLog.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/entity/Worker.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/patient/PatientController.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/repository/DiagnosticRepository.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/repository/EncounterRepository.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/repository/PatientRepository.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/repository/SyncLogRepository.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/repository/WorkerRepository.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/sync/SyncController.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/sync/SyncService.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/sync/SyncStatusController.java
+/home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/sync/WebSocketConfig.java
 /home/devxpriyanshu/carenode/carenode-backend/src/main/java/com/carenode/triage/TriageEngine.java

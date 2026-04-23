@@ -2,6 +2,7 @@ package com.carenode.patient;
 
 import com.carenode.entity.Patient;
 import com.carenode.repository.PatientRepository;
+import com.carenode.repository.EncounterRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.UUID;
 public class PatientController {
 
     private final PatientRepository patientRepository;
+    private final EncounterRepository encounterRepository;
 
-    public PatientController(PatientRepository patientRepository) {
+    public PatientController(PatientRepository patientRepository, EncounterRepository encounterRepository) {
         this.patientRepository = patientRepository;
+        this.encounterRepository = encounterRepository;
     }
 
     @GetMapping
@@ -50,5 +53,10 @@ public class PatientController {
         }
         patientRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{patientId}/encounters")
+    public List<com.carenode.entity.Encounter> getEncountersByPatient(@PathVariable UUID patientId) {
+        return encounterRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }
 }

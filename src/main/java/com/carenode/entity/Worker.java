@@ -22,6 +22,11 @@ public class Worker {
 
     private String role;
 
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
     private LocalDateTime createdAt;
 
     // Getters and setters
