@@ -1,6 +1,7 @@
 package com.carenode.sync;
 
 import com.carenode.entity.SyncLog;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class SyncController {
     }
 
     @GetMapping("/pull")
-    public ResponseEntity<List<SyncLog>> pullChanges(@RequestParam LocalDateTime since,
+    public ResponseEntity<List<SyncLog>> pullChanges(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since,
                                                      @RequestHeader("Device-Id") String deviceId) {
         List<SyncLog> changes = syncService.getChangesSince(since, deviceId);
         return ResponseEntity.ok(changes);

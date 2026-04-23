@@ -40,10 +40,13 @@ public class EncounterController {
     }
 
     @PostMapping
-    public Encounter createEncounter(@RequestBody Encounter encounter) {
+    public ResponseEntity<?> createEncounter(@RequestBody Encounter encounter) {
         if (encounter.getPatient() != null && encounter.getPatient().getId() != null) {
             patientRepository.findById(encounter.getPatient().getId())
-                    .ifPresent(encounter::setPatient);
+                    .ifPresentOrElse(
+                            encounter::setPatient,
+                            () -> encounter.setPatient(null)
+                    );
         }
 
         TriageEngine.EncounterData data = new TriageEngine.EncounterData();
@@ -56,7 +59,7 @@ public class EncounterController {
         TriageEngine.TriageResult result = triageEngine.score(data);
         encounter.setTriageScore(result.getSeverity());
         encounter.setTriageRationale(result.getRationale());
-        return encounterRepository.save(encounter);
+        return ResponseEntity.ok(encounterRepository.save(encounter));
     }
 
     @GetMapping("/{id}")
