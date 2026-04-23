@@ -24,6 +24,13 @@ public class Encounter {
 
     private String audioR2Key;
 
+    @Column(name = "spO2")
+    private Integer spo2;
+    private Integer heartRate;
+    private Integer systolic;
+    private Integer age;
+    private Boolean pregnant;
+
     private String triageScore;
 
     @Column(columnDefinition = "jsonb")
@@ -55,6 +62,21 @@ public class Encounter {
 
     public String getAudioR2Key() { return audioR2Key; }
     public void setAudioR2Key(String audioR2Key) { this.audioR2Key = audioR2Key; }
+
+    public Integer getSpo2() { return spo2; }
+    public void setSpo2(Integer spo2) { this.spo2 = spo2; }
+
+    public Integer getHeartRate() { return heartRate; }
+    public void setHeartRate(Integer heartRate) { this.heartRate = heartRate; }
+
+    public Integer getSystolic() { return systolic; }
+    public void setSystolic(Integer systolic) { this.systolic = systolic; }
+
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+
+    public Boolean getPregnant() { return pregnant; }
+    public void setPregnant(Boolean pregnant) { this.pregnant = pregnant; }
 
     public String getTriageScore() { return triageScore; }
     public void setTriageScore(String triageScore) { this.triageScore = triageScore; }

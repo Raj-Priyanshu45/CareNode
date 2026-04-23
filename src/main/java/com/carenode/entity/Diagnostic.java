@@ -17,7 +17,8 @@ public class Diagnostic {
     @JoinColumn(name = "encounter_id")
     private Encounter encounter;
 
-    private String imageR2Key;
+    @Column(name = "image_r2_key")
+    private String imageCloudinaryKey;
 
     private String modelName;
 
@@ -38,8 +39,8 @@ public class Diagnostic {
     public Encounter getEncounter() { return encounter; }
     public void setEncounter(Encounter encounter) { this.encounter = encounter; }
 
-    public String getImageR2Key() { return imageR2Key; }
-    public void setImageR2Key(String imageR2Key) { this.imageR2Key = this.imageR2Key; }
+    public String getImageCloudinaryKey() { return imageCloudinaryKey; }
+    public void setImageCloudinaryKey(String imageCloudinaryKey) { this.imageCloudinaryKey = imageCloudinaryKey; }
 
     public String getModelName() { return modelName; }
     public void setModelName(String modelName) { this.modelName = modelName; }

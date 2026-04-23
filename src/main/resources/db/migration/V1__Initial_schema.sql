@@ -1,13 +1,3 @@
--- FHIR-aligned Patient resource
-CREATE TABLE patients (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    local_id VARCHAR(50) UNIQUE,          -- device-generated ID for offline
-    fhir_resource JSONB,                  -- full FHIR Patient JSON
-    created_at TIMESTAMP DEFAULT NOW(),
-    synced_at TIMESTAMP,
-    worker_id UUID REFERENCES workers(id)
-);
-
 -- Healthcare workers
 CREATE TABLE workers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -18,6 +8,16 @@ CREATE TABLE workers (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- FHIR-aligned Patient resource
+CREATE TABLE patients (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    local_id VARCHAR(50) UNIQUE,          -- device-generated ID for offline
+    fhir_resource JSONB,                  -- full FHIR Patient JSON
+    created_at TIMESTAMP DEFAULT NOW(),
+    synced_at TIMESTAMP,
+    worker_id UUID REFERENCES workers(id)
+);
+
 -- Clinical encounters (maps to FHIR Encounter)
 CREATE TABLE encounters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -25,6 +25,11 @@ CREATE TABLE encounters (
     soap_note TEXT,                       -- generated SOAP note
     voice_transcript TEXT,
     audio_r2_key VARCHAR(255),            -- Cloudflare R2 key
+    spO2 INT,
+    heart_rate INT,
+    systolic INT,
+    age INT,
+    pregnant BOOLEAN,
     triage_score VARCHAR(10),             -- LOW / MEDIUM / HIGH / CRITICAL
     triage_rationale JSONB,               -- AI reasoning breakdown
     sync_status VARCHAR(20) DEFAULT 'PENDING',

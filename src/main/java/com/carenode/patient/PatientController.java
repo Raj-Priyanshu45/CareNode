@@ -42,4 +42,13 @@ public class PatientController {
         patient.setId(id);
         return ResponseEntity.ok(patientRepository.save(patient));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePatient(@PathVariable UUID id) {
+        if (!patientRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        patientRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

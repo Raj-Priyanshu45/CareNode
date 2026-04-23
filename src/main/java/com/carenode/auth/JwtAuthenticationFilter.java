@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import com.carenode.entity.Worker;
+import com.carenode.repository.WorkerRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,9 +19,11 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final WorkerRepository workerRepository;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, WorkerRepository workerRepository) {
         this.jwtUtil = jwtUtil;
+        this.workerRepository = workerRepository;
     }
 
     @Override
@@ -30,10 +34,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             try {
                 String username = jwtUtil.extractUsername(token);
-                UserDetails userDetails = User.withUsername(username).password("").authorities(Collections.emptyList()).build();
-                UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                Worker worker = workerRepository.findByUsername(username).orElse(null);
+                if (worker != null) {
+                    String role = worker.getRole() != null ? worker.getRole() : "USER";
+                    UserDetails userDetails = User.withUsername(username)
+                        .password("")
+                        .authorities("ROLE_" + role.toUpperCase())
+                        .build();
+                    UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             } catch (Exception e) {
                 // Invalid token
             }

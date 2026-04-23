@@ -1,13 +1,17 @@
 package com.carenode.sync;
 
+import com.carenode.entity.Encounter;
+import com.carenode.entity.Patient;
 import com.carenode.entity.SyncLog;
+import com.carenode.repository.EncounterRepository;
+import com.carenode.repository.PatientRepository;
 import com.carenode.repository.SyncLogRepository;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,10 +19,16 @@ import java.util.UUID;
 public class SyncService {
 
     private final SyncLogRepository syncLogRepository;
+    private final PatientRepository patientRepository;
+    private final EncounterRepository encounterRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public SyncService(SyncLogRepository syncLogRepository) {
+    public SyncService(SyncLogRepository syncLogRepository,
+                       PatientRepository patientRepository,
+                       EncounterRepository encounterRepository) {
         this.syncLogRepository = syncLogRepository;
+        this.patientRepository = patientRepository;
+        this.encounterRepository = encounterRepository;
     }
 
     public SyncResponse processBatch(SyncBatchRequest request, String deviceId) {
@@ -30,7 +40,6 @@ public class SyncService {
 
             if (existing.isPresent() &&
                 existing.get().getServerTimestamp().isAfter(record.getClientTimestamp())) {
-                // Conflict: server has newer data
                 conflicts.add(new SyncConflict(record, existing.get()));
             } else {
                 applyChange(record, deviceId);
@@ -51,14 +60,40 @@ public class SyncService {
         log.setClientTimestamp(record.getClientTimestamp());
         log.setServerTimestamp(LocalDateTime.now());
         syncLogRepository.save(log);
-        // Here you would apply the change to the actual entity, e.g., save/update patient, encounter, etc.
+
+        try {
+            if ("PATIENT".equalsIgnoreCase(record.getEntityType())) {
+                Map<String, Object> body = objectMapper.readValue(record.getPayload(), Map.class);
+                Patient patient = patientRepository.findById(record.getEntityId()).orElse(new Patient());
+                patient.setId(record.getEntityId());
+                patient.setLocalId((String) body.get("localId"));
+                patient.setFhirResource(objectMapper.writeValueAsString(body.get("fhirResource")));
+                patientRepository.save(patient);
+            } else if ("ENCOUNTER".equalsIgnoreCase(record.getEntityType())) {
+                Map<String, Object> body = objectMapper.readValue(record.getPayload(), Map.class);
+                Encounter encounter = encounterRepository.findById(record.getEntityId()).orElse(new Encounter());
+                encounter.setId(record.getEntityId());
+                if (body.containsKey("soapNote")) {
+                    encounter.setSoapNote((String) body.get("soapNote"));
+                }
+                if (body.containsKey("voiceTranscript")) {
+                    encounter.setVoiceTranscript((String) body.get("voiceTranscript"));
+                }
+                if (body.containsKey("triageScore")) {
+                    encounter.setTriageScore((String) body.get("triageScore"));
+                }
+                if (body.containsKey("triageRationale")) {
+                    encounter.setTriageRationale(objectMapper.writeValueAsString(body.get("triageRationale")));
+                }
+                encounterRepository.save(encounter);
+            }
+        } catch (Exception ignore) {
+            // sync payload parse failed, but log still records the request
+        }
     }
 
     public List<SyncLog> getChangesSince(LocalDateTime since, String deviceId) {
-        // Simplified: return all logs after since
-        return syncLogRepository.findAll().stream()
-                .filter(log -> log.getServerTimestamp().isAfter(since))
-                .toList();
+        return syncLogRepository.findByServerTimestampAfter(since);
     }
 
     public static class SyncBatchRequest {
@@ -75,7 +110,6 @@ public class SyncService {
         private String payload;
         private LocalDateTime clientTimestamp;
 
-        // getters and setters
         public String getEntityType() { return entityType; }
         public void setEntityType(String entityType) { this.entityType = entityType; }
         public UUID getEntityId() { return entityId; }

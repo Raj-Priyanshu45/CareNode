@@ -3,7 +3,10 @@ package com.carenode.ai;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -17,32 +20,37 @@ public class AIBridgeService {
     }
 
     public Mono<SoapResponse> transcribeToSoap(MultipartFile audioFile) {
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+        formData.add("audio", audioFile.getResource());
         return webClient.post()
                 .uri("/transcribe-soap")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .bodyValue(audioFile)
+                .body(BodyInserters.fromMultipartData(formData))
                 .retrieve()
                 .bodyToMono(SoapResponse.class);
     }
 
     public Mono<DiagnosticResponse> diagnoseImage(MultipartFile imageFile, String modelType) {
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+        formData.add("image", imageFile.getResource());
+        formData.add("model_type", modelType);
         return webClient.post()
-                .uri("/diagnose/image?model_type=" + modelType)
+                .uri("/diagnose/image")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .bodyValue(imageFile)
+                .body(BodyInserters.fromMultipartData(formData))
                 .retrieve()
                 .bodyToMono(DiagnosticResponse.class);
     }
 
     public static class SoapResponse {
         private String transcript;
-        private String soap;
+        private Object soap;
 
         // getters and setters
         public String getTranscript() { return transcript; }
         public void setTranscript(String transcript) { this.transcript = transcript; }
-        public String getSoap() { return soap; }
-        public void setSoap(String soap) { this.soap = soap; }
+        public Object getSoap() { return soap; }
+        public void setSoap(Object soap) { this.soap = soap; }
     }
 
     public static class DiagnosticResponse {
