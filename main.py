@@ -38,7 +38,7 @@ async def transcribe_to_soap(audio: UploadFile = File(...)):
 @app.post("/diagnose/image")
 async def diagnose_image(image: UploadFile = File(...), model_type: str = Form(...)):
     # Mock diagnostic
-    top_class = "retinopathy_mild" if model_type == "retina" else "normal"
+    top_class = CLASS_LABELS[model_type][1] if model_type in CLASS_LABELS else "normal"
     confidence = 0.87
 
     return {
