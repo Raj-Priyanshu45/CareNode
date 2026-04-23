@@ -21,6 +21,7 @@ public class PatientController {
     }
 
     @GetMapping
+    @org.springframework.cache.annotation.Cacheable("patients")
     public List<Patient> getAllPatients() {
         return patientRepository.findAll();
     }
@@ -33,11 +34,13 @@ public class PatientController {
     }
 
     @PostMapping
+    @org.springframework.cache.annotation.CacheEvict(value = "patients", allEntries = true)
     public Patient createPatient(@RequestBody Patient patient) {
         return patientRepository.save(patient);
     }
 
     @PutMapping("/{id}")
+    @org.springframework.cache.annotation.CacheEvict(value = "patients", allEntries = true)
     public ResponseEntity<Patient> updatePatient(@PathVariable UUID id, @RequestBody Patient patient) {
         if (!patientRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -47,6 +50,7 @@ public class PatientController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.cache.annotation.CacheEvict(value = "patients", allEntries = true)
     public ResponseEntity<Void> deletePatient(@PathVariable UUID id) {
         if (!patientRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

@@ -38,17 +38,25 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public boolean isTokenValid(String token, String username) {
-        return extractUsername(token).equals(username) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
+    public Date extractExpiration(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getExpiration()
-                .before(new Date());
+                .getExpiration();
+    }
+
+    public long getTokenTimeToLiveMillis(String token) {
+        long ttl = extractExpiration(token).getTime() - System.currentTimeMillis();
+        return Math.max(ttl, 0);
+    }
+
+    public boolean isTokenValid(String token, String username) {
+        return extractUsername(token).equals(username) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
     }
 }

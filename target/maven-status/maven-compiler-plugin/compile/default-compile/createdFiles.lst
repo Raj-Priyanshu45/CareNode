@@ -1,6 +1,7 @@
 com/carenode/repository/DiagnosticRepository.class
 com/carenode/sync/SyncService$SyncConflict.class
 com/carenode/sync/SyncService.class
+com/carenode/common/RedisConfig.class
 com/carenode/sync/SyncService$SyncRecord.class
 com/carenode/sync/WebSocketConfig.class
 com/carenode/repository/PatientRepository.class
@@ -34,6 +35,8 @@ com/carenode/ai/AIBridgeService.class
 com/carenode/ai/AIBridgeService$DiagnosticResponse.class
 com/carenode/auth/JwtAuthenticationFilter.class
 com/carenode/sync/SyncStatusController.class
+com/carenode/auth/TokenBlacklistService.class
 com/carenode/triage/TriageEngine$EncounterData.class
 com/carenode/ai/AIBridgeService$SoapResponse.class
+com/carenode/auth/LoginAttemptService.class
 com/carenode/repository/SyncLogRepository.class

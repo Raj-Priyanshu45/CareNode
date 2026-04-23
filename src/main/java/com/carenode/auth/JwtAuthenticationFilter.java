@@ -15,15 +15,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
+import com.carenode.auth.TokenBlacklistService;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final WorkerRepository workerRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, WorkerRepository workerRepository) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, WorkerRepository workerRepository, TokenBlacklistService tokenBlacklistService) {
         this.jwtUtil = jwtUtil;
         this.workerRepository = workerRepository;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -33,6 +37,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             try {
+                if (tokenBlacklistService.isBlacklisted(token)) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been invalidated");
+                    return;
+                }
                 String username = jwtUtil.extractUsername(token);
                 Worker worker = workerRepository.findByUsername(username).orElse(null);
                 if (worker != null) {
