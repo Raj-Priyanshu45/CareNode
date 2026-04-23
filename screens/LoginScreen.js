@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { login } from '../api';
+import { loginSuccess } from '../store/authSlice';
 
 export default function LoginScreen({ navigation }) {
+  const dispatch = useDispatch();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -11,7 +14,8 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
     try {
       const data = await login(username, password);
-      navigation.navigate('Patients', { token: data.token });
+      dispatch(loginSuccess(data.token));
+      navigation.navigate('Patients');
     } catch (err) {
       setError(err.message);
     }

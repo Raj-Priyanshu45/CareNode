@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { TextInput, Button, Text, Card } from 'react-native-paper';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
+import { withDatabase } from '@nozbe/watermelondb/DatabaseProvider';
 import { createEncounter, transcribeEncounterAudio, uploadDiagnostic } from '../api';
 
-export default function EncounterScreen({ route, navigation }) {
-  const { patientId: paramPatientId, token } = route.params;
+function EncounterScreen({ route, navigation, database }) {
+  const { patientId: paramPatientId } = route.params || {};
   const patientId = paramPatientId ?? null;
+  const token = useSelector((state) => state.auth.token);
   const [recording, setRecording] = useState(null);
   const [soapNote, setSoapNote] = useState('');
   const [triageScore, setTriageScore] = useState('');
@@ -54,7 +57,7 @@ export default function EncounterScreen({ route, navigation }) {
       setSoapNote(JSON.stringify(result.soap, null, 2));
       setTriageScore(created.triageScore || 'Pending');
       setMessage('Audio transcribed and encounter saved');
-      navigation.navigate('Patients', { token });
+      navigation.navigate('Patients');
     } catch (err) {
       setMessage(err.message);
     }
@@ -167,35 +170,11 @@ export default function EncounterScreen({ route, navigation }) {
         </Card.Content>
       </Card>
       {message ? <Text style={styles.message}>{message}</Text> : null}
-      <Button mode="contained" style={styles.saveButton} onPress={() => navigation.navigate('Patients', { token })}>
+      <Button mode="contained" style={styles.saveButton} onPress={() => navigation.navigate('Patients')}>
         Back to Patients
       </Button>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  card: {
-    marginBottom: 10,
-  },
-  saveButton: {
-    marginTop: 20,
-  },
-  input: {
-    marginBottom: 10,
-  },
-  message: {
-    color: 'green',
-    marginVertical: 10,
-    paddingHorizontal: 10,
-  },
-});
+export default withDatabase(EncounterScreen);
