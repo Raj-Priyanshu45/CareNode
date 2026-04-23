@@ -6,7 +6,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { createEncounter, transcribeEncounterAudio, uploadDiagnostic } from '../api';
 
 export default function EncounterScreen({ route, navigation }) {
-  const { patientId, token } = route.params;
+  const { patientId: paramPatientId, token } = route.params;
+  const patientId = paramPatientId ?? null;
   const [recording, setRecording] = useState(null);
   const [soapNote, setSoapNote] = useState('');
   const [triageScore, setTriageScore] = useState('');
@@ -31,6 +32,10 @@ export default function EncounterScreen({ route, navigation }) {
   };
 
   const stopRecording = async () => {
+    if (!patientId) {
+      setMessage('No patient selected');
+      return;
+    }
     if (!recording) return;
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI();
@@ -61,8 +66,13 @@ export default function EncounterScreen({ route, navigation }) {
       setMessage('Camera permission denied');
       return;
     }
+    if (!patientId) {
+      setMessage('No patient selected');
+      return;
+    }
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7, base64: false });
-    if (!result.cancelled) {
+    if (!result.canceled && result.assets?.length > 0) {
+      const uri = result.assets[0].uri;
       try {
         const created = await createEncounter(token, {
           patient: { id: patientId },
@@ -72,7 +82,7 @@ export default function EncounterScreen({ route, navigation }) {
           age: parseInt(age, 10) || null,
           pregnant,
         });
-        const diagnostic = await uploadDiagnostic(token, created.id, result.uri, 'retina');
+        const diagnostic = await uploadDiagnostic(token, created.id, uri, 'retina');
         setMessage(`Diagnostic saved: ${diagnostic.prediction} (${diagnostic.confidence})`);
       } catch (err) {
         setMessage(err.message);
@@ -187,23 +197,5 @@ const styles = StyleSheet.create({
     color: 'green',
     marginVertical: 10,
     paddingHorizontal: 10,
-  },
-});
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 10,
-  },
-  title: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  card: {
-    marginBottom: 10,
-  },
-  saveButton: {
-    marginTop: 20,
   },
 });
