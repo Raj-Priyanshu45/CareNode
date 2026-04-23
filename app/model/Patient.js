@@ -6,7 +6,7 @@ export default class Patient extends Model {
   static table = 'patients';
   static associations = {
     encounters: { type: 'has_many', foreignKey: 'patient_id' },
-    workers: { type: 'belongs_to', key: 'worker_id' },
+    workers: { type: 'belongs_to', foreignKey: 'worker_id' },
   };
 
   @field('local_id') localId;

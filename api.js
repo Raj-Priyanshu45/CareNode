@@ -88,6 +88,30 @@ export async function createPatient(token, patientData) {
     });
   });
 
+  // Push to backend while online
+  try {
+    await fetch(`${BASE_URL}/patients`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        localId: patientData.localId,
+        fhirResource: JSON.stringify({
+          resourceType: 'Patient',
+          name: [{ text: patientData.name }],
+          birthDate: patientData.birthDate,
+          gender: patientData.gender,
+          telecom: [{ value: patientData.phone }],
+          address: [{ text: patientData.address }]
+        })
+      }),
+    });
+  } catch (e) {
+    console.warn('[Sync] Offline — patient queued locally only');
+  }
+
   // Trigger sync
   await performSync(token);
 
@@ -110,6 +134,27 @@ export async function createEncounter(token, encounterData) {
       encounter.createdAt = new Date().getTime();
     });
   });
+
+  // Push to backend while online
+  try {
+    await fetch(`${BASE_URL}/encounters`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        patient: { id: encounterData.patient.id },
+        spo2: encounterData.spo2,
+        heartRate: encounterData.heartRate,
+        systolic: encounterData.systolic,
+        age: encounterData.age,
+        pregnant: encounterData.pregnant,
+      }),
+    });
+  } catch (e) {
+    console.warn('[Sync] Offline — encounter queued locally only');
+  }
 
   // Trigger a sync after local creation
   await performSync(token);
@@ -157,20 +202,20 @@ export async function transcribeEncounterAudio(token, encounterId, uri) {
   await database.write(async () => {
     const encounter = await database.collections.get('encounters').find(encounterId);
     if (encounter) {
-      encounter.update(encounter => {
-        encounter.voiceTranscript = result.speech_to_text;
-        encounter.soapNote = JSON.stringify({
+      encounter.update(e => {
+        e.voiceTranscript = result.speech_to_text;
+        e.soapNote = JSON.stringify({
           subjective: result.speech_to_text,
           objective: `Confidence: ${result.confidence}`,
           assessment: result.doctor_response,
           plan: `${result.treatment_plan}. Medicines: ${result.medicines}. Safety: ${result.safety_notes}. Triage: ${result.triage}`
         });
-        encounter.triageScore = result.triage || encounter.triageScore;
-        encounter.diagnosis = result.doctor_response;
-        encounter.treatmentPlan = result.treatment_plan;
-        encounter.medicines = result.medicines;
-        encounter.safetyNotes = result.safety_notes;
-        encounter.confidence = result.confidence;
+        e.triageScore = result.triage || encounter.triageScore;
+        e.diagnosis = result.doctor_response;
+        e.treatmentPlan = result.treatment_plan;
+        e.medicines = result.medicines;
+        e.safetyNotes = result.safety_notes;
+        e.confidence = result.confidence;
       });
     }
   });
@@ -232,13 +277,13 @@ export async function uploadDiagnostic(token, encounterId, uri, modelType) {
     });
     // Also update encounter with AI results
     const enc = await encounterCollection.find(encounterId);
-    enc.update(enc => {
-      enc.diagnosis = result.doctor_response;
-      enc.treatmentPlan = result.treatment_plan;
-      enc.medicines = result.medicines;
-      enc.safetyNotes = result.safety_notes;
-      enc.confidence = result.confidence;
-      enc.triage = result.triage;
+    enc.update(e => {
+      e.diagnosis = result.doctor_response;
+      e.treatmentPlan = result.treatment_plan;
+      e.medicines = result.medicines;
+      e.safetyNotes = result.safety_notes;
+      e.confidence = result.confidence;
+      e.triage = result.triage;
     });
   });
 
