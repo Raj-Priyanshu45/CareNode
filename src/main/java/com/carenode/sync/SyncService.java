@@ -21,7 +21,8 @@ public class SyncService {
     private final SyncLogRepository syncLogRepository;
     private final PatientRepository patientRepository;
     private final EncounterRepository encounterRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+        .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     public SyncService(SyncLogRepository syncLogRepository,
                        PatientRepository patientRepository,
