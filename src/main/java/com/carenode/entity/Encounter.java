@@ -22,6 +22,7 @@ public class Encounter {
     @Column(columnDefinition = "TEXT")
     private String voiceTranscript;
 
+    @Column(name = "audio_r2_key")
     private String audioR2Key;
 
     @Column(name = "spO2")
