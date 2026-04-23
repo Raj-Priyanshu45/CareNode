@@ -68,6 +68,32 @@ export async function getPatient(patientId) {
   return patient;
 }
 
+export async function createPatient(token, patientData) {
+  const patientsCollection = database.collections.get('patients');
+  let newPatient;
+
+  await database.write(async () => {
+    newPatient = await patientsCollection.create(patient => {
+      patient.localId = patientData.localId;
+      patient.fhirResource = JSON.stringify({
+        resourceType: 'Patient',
+        name: [{ text: patientData.name }],
+        birthDate: patientData.birthDate,
+        gender: patientData.gender,
+        telecom: [{ value: patientData.phone }],
+        address: [{ text: patientData.address }]
+      });
+      patient.createdAt = new Date().getTime();
+      patient.syncedAt = new Date().getTime();
+    });
+  });
+
+  // Trigger sync
+  await performSync(token);
+
+  return { id: newPatient.id, localId: newPatient.localId };
+}
+
 export async function createEncounter(token, encounterData) {
   const encountersCollection = database.collections.get('encounters');
   let newEncounter;

@@ -5,7 +5,7 @@ import { TextInput, Button, Text, Card } from 'react-native-paper';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import { withDatabase } from '@nozbe/watermelondb/DatabaseProvider';
-import { createEncounter, transcribeEncounterAudio, uploadDiagnostic } from '../api';
+import { createEncounter, transcribeEncounterAudio, uploadDiagnostic, createPatient } from '../api';
 
 function EncounterScreen({ route, navigation, database }) {
   const { patientId: paramPatientId } = route.params || {};
@@ -21,7 +21,18 @@ function EncounterScreen({ route, navigation, database }) {
   const [pregnant, setPregnant] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Patient creation states
+  const [patientName, setPatientName] = useState('');
+  const [patientAge, setPatientAge] = useState('');
+  const [patientGender, setPatientGender] = useState('male');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [patientAddress, setPatientAddress] = useState('');
+
   const startRecording = async () => {
+    if (!patientId && !patientName) {
+      setMessage('Please enter patient name first');
+      return;
+    }
     const { status } = await Audio.requestPermissionsAsync();
     if (status !== 'granted') {
       setMessage('Audio permission denied');
@@ -35,8 +46,8 @@ function EncounterScreen({ route, navigation, database }) {
   };
 
   const stopRecording = async () => {
-    if (!patientId) {
-      setMessage('No patient selected');
+    if (!patientId && !patientName) {
+      setMessage('Please enter patient name first');
       return;
     }
     if (!recording) return;
@@ -45,8 +56,23 @@ function EncounterScreen({ route, navigation, database }) {
     setRecording(null);
 
     try {
+      let currentPatientId = patientId;
+      if (!currentPatientId) {
+        // Create patient first
+        const newPatient = await createPatient(token, {
+          localId: `P${Date.now()}`,
+          name: patientName,
+          birthDate: new Date(Date.now() - parseInt(patientAge) * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          gender: patientGender,
+          phone: patientPhone,
+          address: patientAddress
+        });
+        currentPatientId = newPatient.id;
+        setMessage('Patient created successfully');
+      }
+
       const created = await createEncounter(token, {
-        patient: { id: patientId },
+        patient: { id: currentPatientId },
         spo2: parseInt(spO2, 10) || null,
         heartRate: parseInt(heartRate, 10) || null,
         systolic: parseInt(systolic, 10) || null,
@@ -64,21 +90,37 @@ function EncounterScreen({ route, navigation, database }) {
   };
 
   const captureImage = async () => {
+    if (!patientId && !patientName) {
+      setMessage('Please enter patient name first');
+      return;
+    }
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       setMessage('Camera permission denied');
       return;
     }
-    if (!patientId) {
-      setMessage('No patient selected');
-      return;
-    }
+
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7, base64: false });
     if (!result.canceled && result.assets?.length > 0) {
       const uri = result.assets[0].uri;
       try {
+        let currentPatientId = patientId;
+        if (!currentPatientId) {
+          // Create patient first
+          const newPatient = await createPatient(token, {
+            localId: `P${Date.now()}`,
+            name: patientName,
+            birthDate: new Date(Date.now() - parseInt(patientAge) * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            gender: patientGender,
+            phone: patientPhone,
+            address: patientAddress
+          });
+          currentPatientId = newPatient.id;
+          setMessage('Patient created successfully');
+        }
+
         const created = await createEncounter(token, {
-          patient: { id: patientId },
+          patient: { id: currentPatientId },
           spo2: parseInt(spO2, 10) || null,
           heartRate: parseInt(heartRate, 10) || null,
           systolic: parseInt(systolic, 10) || null,
@@ -96,6 +138,47 @@ function EncounterScreen({ route, navigation, database }) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>New Encounter</Text>
+      {patientId ? (
+        <Text>Patient ID: {patientId}</Text>
+      ) : (
+        <Card style={styles.card}>
+          <Card.Title title="Create New Patient" />
+          <Card.Content>
+            <TextInput
+              label="Patient Name"
+              value={patientName}
+              onChangeText={setPatientName}
+              style={styles.input}
+            />
+            <TextInput
+              label="Age"
+              value={patientAge}
+              onChangeText={setPatientAge}
+              keyboardType="numeric"
+              style={styles.input}
+            />
+            <TextInput
+              label="Gender"
+              value={patientGender}
+              onChangeText={setPatientGender}
+              style={styles.input}
+            />
+            <TextInput
+              label="Phone"
+              value={patientPhone}
+              onChangeText={setPatientPhone}
+              keyboardType="phone-pad"
+              style={styles.input}
+            />
+            <TextInput
+              label="Address"
+              value={patientAddress}
+              onChangeText={setPatientAddress}
+              style={styles.input}
+            />
+          </Card.Content>
+        </Card>
+      )}
       <Card style={styles.card}>
         <Card.Title title="Vitals" />
         <Card.Content>
@@ -178,3 +261,12 @@ function EncounterScreen({ route, navigation, database }) {
 }
 
 export default withDatabase(EncounterScreen);
+
+const styles = StyleSheet.create({
+  container: { padding: 16 },
+  title: { fontSize: 22, marginBottom: 12, fontWeight: 'bold' },
+  card: { marginBottom: 12 },
+  input: { marginBottom: 8 },
+  message: { color: 'green', marginTop: 8, textAlign: 'center' },
+  saveButton: { marginTop: 16 },
+});
