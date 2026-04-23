@@ -5,7 +5,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sync")
@@ -25,10 +27,13 @@ public class SyncController {
     }
 
     @GetMapping("/pull")
-    public ResponseEntity<List<SyncLog>> pullChanges(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since,
-                                                     @RequestHeader("Device-Id") String deviceId) {
+    public ResponseEntity<?> pullChanges(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since,
+                                         @RequestHeader("Device-Id") String deviceId) {
         List<SyncLog> changes = syncService.getChangesSince(since, deviceId);
-        return ResponseEntity.ok(changes);
+        Map<String, Object> response = new HashMap<>();
+        response.put("changes", changes);
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
     }
 
     // WebSocket endpoint would be added here for real-time status

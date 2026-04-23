@@ -69,6 +69,11 @@ public class EncounterController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/triage-dashboard")
+    public List<Encounter> getTriageDashboard() {
+        return encounterRepository.findAllOrderedBySeverity();
+    }
+
     @PostMapping("/{id}/transcribe")
     public ResponseEntity<?> transcribeAudio(@PathVariable UUID id,
                                              @RequestParam("audio") MultipartFile audioFile) {
