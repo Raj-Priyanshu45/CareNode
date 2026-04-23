@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { TextInput, Button, Text, Card } from 'react-native-paper';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -91,7 +91,7 @@ export default function EncounterScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>New Encounter</Text>
       <Card style={styles.card}>
         <Card.Title title="Vitals" />
@@ -170,7 +170,7 @@ export default function EncounterScreen({ route, navigation }) {
       <Button mode="contained" style={styles.saveButton} onPress={() => navigation.navigate('Patients', { token })}>
         Back to Patients
       </Button>
-    </View>
+    </ScrollView>
   );
 }
 

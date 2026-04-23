@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { List, FAB, Text } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import { fetchPatients } from '../api';
 
 export default function PatientListScreen({ navigation, route }) {
@@ -8,17 +9,19 @@ export default function PatientListScreen({ navigation, route }) {
   const [error, setError] = useState('');
   const token = route.params?.token;
 
-  useEffect(() => {
-    const loadPatients = async () => {
-      try {
-        const data = await fetchPatients(token);
-        setPatients(data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-    loadPatients();
-  }, [token]);
+  useFocusEffect(
+    useCallback(() => {
+      const loadPatients = async () => {
+        try {
+          const data = await fetchPatients(token);
+          setPatients(data);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+      loadPatients();
+    }, [token])
+  );
 
   const getPatientTitle = (item) => {
     try {

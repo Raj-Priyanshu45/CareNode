@@ -1,5 +1,5 @@
 const BASE_URL = __DEV__
-  ? 'http://YOUR_LAPTOP_IP:8080/api'   // physical phone
+  ? 'http://172.23.199.47:8080/api'   // physical phone
   : 'https://your-railway-url.com/api'; // production
 
 export async function login(username, password) {
