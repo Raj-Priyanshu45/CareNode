@@ -161,3 +161,35 @@ async def full_diagnose(
             os.unlink(audio_path)
         if image_path:
             os.unlink(image_path)
+
+@app.post("/diagnose/image")
+async def diagnose_image(image: UploadFile = File(...), model_type: str = Form(...)):
+    if image is None or not image.filename:
+        raise HTTPException(status_code=400, detail="No image file provided")
+
+    image_path = None
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+        tmp.write(await image.read())
+        image_path = tmp.name
+
+    try:
+        result = gradio_client.predict(
+            audio_filepath=None,
+            image_filepath=handle_file(image_path),
+            patient_id="P001", patient_name="Unknown", age="30",
+            sex="Unknown", date_of_birth="1990-01-01",
+            phone_no="0000000000", address="Unknown",
+            api_name="/submit_callback"
+        )
+        confidence = float(result[5]) if result[5] else 0.8
+        prediction = result[1] or "unknown"
+        return {
+            "prediction": prediction,
+            "confidence": confidence,
+            "requiresReferral": confidence > 0.75 and "normal" not in prediction.lower()
+        }
+    except Exception:
+        return {"prediction": "normal", "confidence": 0.5, "requiresReferral": False}
+    finally:
+        if image_path:
+            os.unlink(image_path)
