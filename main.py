@@ -1,8 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
-import numpy as np
-from PIL import Image
 import io
 
 app = FastAPI()
@@ -23,6 +21,9 @@ CLASS_LABELS = {
 
 @app.post("/transcribe-soap")
 async def transcribe_to_soap(audio: UploadFile = File(...)):
+    if audio is None or not audio.filename:
+        raise HTTPException(status_code=400, detail="No audio file provided")
+
     # Mock transcription and SOAP generation
     transcript = "Patient reports headache, fever for 3 days, SpO2 89%"
 
