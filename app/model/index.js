@@ -1,6 +1,6 @@
 // app/model/index.js
 import { Database } from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqliteAdapter';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
 import { mySchema } from './schema';
 import Patient from './Patient';
