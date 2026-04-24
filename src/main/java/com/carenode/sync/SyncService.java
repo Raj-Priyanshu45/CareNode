@@ -8,6 +8,7 @@ import com.carenode.repository.PatientRepository;
 import com.carenode.repository.SyncLogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,12 @@ public class SyncService {
         List<UUID> accepted = new ArrayList<>();
 
         for (SyncRecord record : request.getChanges()) {
-            Optional<SyncLog> existing = syncLogRepository.findTopByEntityIdOrderByServerTimestampDesc(record.getEntityId());
+            Optional<SyncLog> existing =
+                syncLogRepository.findTopByEntityIdOrderByServerTimestampDesc(record.getEntityId());
 
             if (existing.isPresent() &&
                 existing.get().getServerTimestamp().isAfter(record.getClientTimestamp())) {
+                // Server has a newer version — report conflict back to client
                 conflicts.add(new SyncConflict(record, existing.get()));
             } else {
                 applyChange(record, deviceId);
@@ -68,38 +71,43 @@ public class SyncService {
                 Patient patient = patientRepository.findById(record.getEntityId()).orElse(new Patient());
                 patient.setId(record.getEntityId());
                 patient.setLocalId((String) body.get("localId"));
-                patient.setFhirResource(objectMapper.writeValueAsString(body.get("fhirResource")));
+                if (body.get("fhirResource") != null) {
+                    patient.setFhirResource(objectMapper.writeValueAsString(body.get("fhirResource")));
+                }
                 patientRepository.save(patient);
+
             } else if ("ENCOUNTER".equalsIgnoreCase(record.getEntityType())) {
                 Map<String, Object> body = objectMapper.readValue(record.getPayload(), Map.class);
-                Encounter encounter = encounterRepository.findById(record.getEntityId()).orElse(new Encounter());
+                Encounter encounter = encounterRepository.findById(record.getEntityId())
+                        .orElse(new Encounter());
                 encounter.setId(record.getEntityId());
-                if (body.containsKey("soapNote")) {
-                    encounter.setSoapNote((String) body.get("soapNote"));
-                }
-                if (body.containsKey("voiceTranscript")) {
-                    encounter.setVoiceTranscript((String) body.get("voiceTranscript"));
-                }
-                if (body.containsKey("triageScore")) {
-                    encounter.setTriageScore((String) body.get("triageScore"));
-                }
+                if (body.containsKey("soapNote"))        encounter.setSoapNote((String) body.get("soapNote"));
+                if (body.containsKey("voiceTranscript")) encounter.setVoiceTranscript((String) body.get("voiceTranscript"));
+                if (body.containsKey("triageScore"))     encounter.setTriageScore((String) body.get("triageScore"));
                 if (body.containsKey("triageRationale")) {
                     encounter.setTriageRationale(objectMapper.writeValueAsString(body.get("triageRationale")));
                 }
+                encounter.setSyncStatus(Encounter.SyncStatus.SYNCED);
+                encounter.setSyncedAt(LocalDateTime.now());
                 encounterRepository.save(encounter);
             }
         } catch (Exception ignore) {
-            // sync payload parse failed, but log still records the request
+            // Payload parse failed — the log entry still records the request for audit
         }
     }
 
+    /**
+     * Bug fix: was returning ALL changes including the requesting device's own writes.
+     * Now correctly filters them out so devices only receive changes from other devices.
+     */
     public List<SyncLog> getChangesSince(LocalDateTime since, String deviceId) {
-        return syncLogRepository.findByServerTimestampAfter(since);
+        return syncLogRepository.findByServerTimestampAfterAndDeviceIdNot(since, deviceId);
     }
+
+    // ── DTOs ───────────────────────────────────────────────────────────────────
 
     public static class SyncBatchRequest {
         private List<SyncRecord> changes;
-
         public List<SyncRecord> getChanges() { return changes; }
         public void setChanges(List<SyncRecord> changes) { this.changes = changes; }
     }
@@ -124,9 +132,9 @@ public class SyncService {
     }
 
     public static class SyncResponse {
-        private List<UUID> accepted;
-        private List<SyncConflict> conflicts;
-        private LocalDateTime lastSynced;
+        private final List<UUID> accepted;
+        private final List<SyncConflict> conflicts;
+        private final LocalDateTime lastSynced;
 
         public SyncResponse(List<UUID> accepted, List<SyncConflict> conflicts, LocalDateTime lastSynced) {
             this.accepted = accepted;
@@ -140,8 +148,8 @@ public class SyncService {
     }
 
     public static class SyncConflict {
-        private SyncRecord clientRecord;
-        private SyncLog serverLog;
+        private final SyncRecord clientRecord;
+        private final SyncLog serverLog;
 
         public SyncConflict(SyncRecord clientRecord, SyncLog serverLog) {
             this.clientRecord = clientRecord;
