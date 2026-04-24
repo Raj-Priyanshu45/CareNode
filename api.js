@@ -25,41 +25,44 @@ export async function login(username, password) {
 }
 
 export async function fetchPatients(token) {
-  // First, try to fetch from local DB
   const patientsCollection = database.collections.get('patients');
-  const localPatients = await patientsCollection.query().fetch();
 
-  if (localPatients.length > 0) {
-    console.log('Serving patients from local DB');
-    return localPatients.map(p => ({ id: p.id, localId: p.localId, fhirResource: p.fhirResource }));
-  }
+  // Always try remote first when we have a token
+  try {
+    const response = await fetch(`${BASE_URL}/patients`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const remotePatients = await response.json();
 
-  // If no local data, fetch from remote and sync
-  console.log('Fetching patients from remote API');
-  const response = await fetch(`${BASE_URL}/patients`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) {
-    throw new Error('Unable to load patients');
-  }
-  const remotePatients = await response.json();
-
-  // Save remote patients to local DB
-  await database.write(async () => {
-    for (const remotePatient of remotePatients) {
-      await patientsCollection.create(patient => {
-        patient._raw.id = remotePatient.id;
-        patient.localId = remotePatient.localId;
-        patient.fhirResource = remotePatient.fhirResource;
-        patient.createdAt = new Date(remotePatient.createdAt).getTime();
-        patient.syncedAt = new Date().getTime();
+      await database.write(async () => {
+        for (const rp of remotePatients) {
+          const existing = await patientsCollection.query(
+            require('@nozbe/watermelondb/QueryDescription').Q.where('_id', rp.id)
+          ).fetch();
+          if (existing.length === 0) {
+            await patientsCollection.create(p => {
+              p._raw.id = rp.id;
+              p.localId = rp.localId;
+              p.fhirResource = typeof rp.fhirResource === 'string'
+                ? rp.fhirResource
+                : JSON.stringify(rp.fhirResource);
+              p.createdAt = rp.createdAt ? new Date(rp.createdAt).getTime() : Date.now();
+              p.syncedAt = Date.now();
+            });
+          }
+        }
       });
-    }
-  });
 
-  return remotePatients;
+      return remotePatients;
+    }
+  } catch (e) {
+    console.warn('[Patients] Offline — serving local cache');
+  }
+
+  // Fallback to local only when offline
+  const local = await patientsCollection.query().fetch();
+  return local.map(p => ({ id: p.id, localId: p.localId, fhirResource: p.fhirResource }));
 }
 
 export async function getPatient(patientId) {
