@@ -27,7 +27,6 @@ export async function login(username, password) {
 export async function fetchPatients(token) {
   const patientsCollection = database.collections.get('patients');
 
-  // Always try remote first when we have a token
   try {
     const response = await fetch(`${BASE_URL}/patients`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -37,10 +36,11 @@ export async function fetchPatients(token) {
 
       await database.write(async () => {
         for (const rp of remotePatients) {
-          const existing = await patientsCollection.query(
-            require('@nozbe/watermelondb/QueryDescription').Q.where('_id', rp.id)
-          ).fetch();
-          if (existing.length === 0) {
+          // find() throws if record doesn't exist — that's how we check
+          try {
+            await patientsCollection.find(rp.id);
+            // record already exists locally, skip
+          } catch {
             await patientsCollection.create(p => {
               p._raw.id = rp.id;
               p.localId = rp.localId;
@@ -60,7 +60,6 @@ export async function fetchPatients(token) {
     console.warn('[Patients] Offline — serving local cache');
   }
 
-  // Fallback to local only when offline
   const local = await patientsCollection.query().fetch();
   return local.map(p => ({ id: p.id, localId: p.localId, fhirResource: p.fhirResource }));
 }

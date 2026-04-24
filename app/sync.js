@@ -2,6 +2,7 @@ import { database } from './model';
 import Constants from 'expo-constants';
 import { getDeviceId } from './deviceId';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Q } from '@nozbe/watermelondb';
 
 const BASE_URL =
   Constants.expoConfig?.extra?.BASE_URL ||
@@ -16,7 +17,7 @@ export async function performSync(token) {
   try {
     const encountersCollection = database.collections.get('encounters');
     const pending = await encountersCollection
-      .query(require('@nozbe/watermelondb/QueryDescription').Q.where('sync_status', 'PENDING'))
+      .query(Q.where('sync_status', 'PENDING'))
       .fetch();
 
     if (pending.length > 0) {
