@@ -2,14 +2,40 @@
   "expo": {
     "name": "CareNode",
     "slug": "carenode-mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "newArchEnabled": false,
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              {
+                "name": "WatermelonDB",
+                "path": "../node_modules/@nozbe/watermelondb"
+              },
+              {
+                "name": "simdjson",
+                "path": "../node_modules/@nozbe/simdjson",
+                "modular_headers": true
+              }
+            ]
+          }
+        }
+      ]
+    ],
     "android": {
       "permissions": [
         "RECORD_AUDIO",
         "CAMERA",
         "RECORD_AUDIO",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "CAMERA",
+        "RECORD_AUDIO",
         "CAMERA"
-      ]
+      ],
+      "package": "com.yashchaudhary91.carenodemobile"
     },
     "extra": {
       "BASE_URL": "http://10.255.255.254:8080/api",
@@ -24,6 +50,8 @@
     "updates": {
       "url": "https://u.expo.dev/f66f536e-36f1-4529-8dbe-186c1099fc16"
     },
-    "ios": {}
+    "ios": {
+      "bundleIdentifier": "com.yashchaudhary91.carenodemobile"
+    }
   }
 }
