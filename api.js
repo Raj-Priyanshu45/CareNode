@@ -113,7 +113,7 @@ export async function createPatient(token, patientData) {
   }
 
   // Trigger sync
-  await performSync(token);
+  // await performSync(token);  // Removed: data already pushed via direct API call above
 
   return { id: newPatient.id, localId: newPatient.localId };
 }
@@ -157,7 +157,7 @@ export async function createEncounter(token, encounterData) {
   }
 
   // Trigger a sync after local creation
-  await performSync(token);
+  // await performSync(token);  // Removed: data already pushed via direct API call above
 
   return { id: newEncounter.id, triageScore: newEncounter.triageScore };
 }
