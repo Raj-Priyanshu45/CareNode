@@ -1,12 +1,20 @@
 package com.carenode.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "diagnostics")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Diagnostic {
 
     @Id
@@ -31,29 +39,4 @@ public class Diagnostic {
     private String rawOutput;
 
     private LocalDateTime createdAt;
-
-    // Getters and setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public Encounter getEncounter() { return encounter; }
-    public void setEncounter(Encounter encounter) { this.encounter = encounter; }
-
-    public String getImageCloudinaryKey() { return imageCloudinaryKey; }
-    public void setImageCloudinaryKey(String imageCloudinaryKey) { this.imageCloudinaryKey = imageCloudinaryKey; }
-
-    public String getModelName() { return modelName; }
-    public void setModelName(String modelName) { this.modelName = modelName; }
-
-    public String getPrediction() { return prediction; }
-    public void setPrediction(String prediction) { this.prediction = prediction; }
-
-    public BigDecimal getConfidenceScore() { return confidenceScore; }
-    public void setConfidenceScore(BigDecimal confidenceScore) { this.confidenceScore = confidenceScore; }
-
-    public String getRawOutput() { return rawOutput; }
-    public void setRawOutput(String rawOutput) { this.rawOutput = rawOutput; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

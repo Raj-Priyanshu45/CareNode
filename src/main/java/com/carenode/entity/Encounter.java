@@ -1,11 +1,19 @@
 package com.carenode.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "encounters")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Encounter {
 
     @Id
@@ -68,50 +76,4 @@ public class Encounter {
     public enum SyncStatus {
         PENDING, SYNCED, CONFLICT
     }
-
-    // Getters and setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public Patient getPatient() { return patient; }
-    public void setPatient(Patient patient) { this.patient = patient; }
-
-    public String getSoapNote() { return soapNote; }
-    public void setSoapNote(String soapNote) { this.soapNote = soapNote; }
-
-    public String getVoiceTranscript() { return voiceTranscript; }
-    public void setVoiceTranscript(String voiceTranscript) { this.voiceTranscript = voiceTranscript; }
-
-    public String getAudioR2Key() { return audioR2Key; }
-    public void setAudioR2Key(String audioR2Key) { this.audioR2Key = audioR2Key; }
-
-    public Integer getSpo2() { return spo2; }
-    public void setSpo2(Integer spo2) { this.spo2 = spo2; }
-
-    public Integer getHeartRate() { return heartRate; }
-    public void setHeartRate(Integer heartRate) { this.heartRate = heartRate; }
-
-    public Integer getSystolic() { return systolic; }
-    public void setSystolic(Integer systolic) { this.systolic = systolic; }
-
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
-
-    public Boolean getPregnant() { return pregnant; }
-    public void setPregnant(Boolean pregnant) { this.pregnant = pregnant; }
-
-    public String getTriageScore() { return triageScore; }
-    public void setTriageScore(String triageScore) { this.triageScore = triageScore; }
-
-    public String getTriageRationale() { return triageRationale; }
-    public void setTriageRationale(String triageRationale) { this.triageRationale = triageRationale; }
-
-    public SyncStatus getSyncStatus() { return syncStatus; }
-    public void setSyncStatus(SyncStatus syncStatus) { this.syncStatus = syncStatus; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getSyncedAt() { return syncedAt; }
-    public void setSyncedAt(LocalDateTime syncedAt) { this.syncedAt = syncedAt; }
 }
