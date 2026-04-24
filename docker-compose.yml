@@ -1,16 +1,17 @@
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: carenode-postgres
+  keycloak-mysql:
+    container_name: keycloak-ecom
+    image: mysql:latest
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: carenode
-    ports:
-      - '5432:5432'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: carenode
+      MYSQL_USER: carenode
+      MYSQL_PASSWORD: root
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./volume-dat/mysql_keycloak_data:/var/lib/mysql
+    ports:
+      - "4306:3306"
 
   redis:
     image: redis:7-alpine
@@ -22,5 +23,4 @@ services:
     command: ["redis-server", "--save", "900", "1", "--save", "300", "10", "--appendonly", "yes"]
 
 volumes:
-  db_data:
   redis_data:
