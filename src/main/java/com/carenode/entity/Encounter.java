@@ -37,6 +37,22 @@ public class Encounter {
     @Column(columnDefinition = "jsonb")
     private String triageRationale;
 
+    @Column(columnDefinition = "TEXT")
+    private String diagnosis;
+
+    @Column(columnDefinition = "TEXT")
+    private String treatmentPlan;
+
+    @Column(columnDefinition = "TEXT")
+    private String medicines;
+
+    @Column(columnDefinition = "TEXT")
+    private String safetyNotes;
+
+    private Double confidence;
+
+    private String triage;
+
     @Enumerated(EnumType.STRING)
     private SyncStatus syncStatus = SyncStatus.PENDING;
 
