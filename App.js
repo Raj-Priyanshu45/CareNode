@@ -1,17 +1,27 @@
 // App.js
-import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator, Text, ScrollView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { Provider as ReduxProvider, useDispatch, useSelector } from 'react-redux';
 import { DatabaseProvider } from '@nozbe/watermelondb/DatabaseProvider';
 import { store } from './store/store';
-import { database } from './app/model';
 import { loadPersistedToken } from './store/authSlice';
 import LoginScreen from './screens/LoginScreen';
 import PatientListScreen from './screens/PatientListScreen';
 import EncounterScreen from './screens/EncounterScreen';
+
+let database;
+let databaseError = null;
+
+try {
+  const { database: db } = require('./app/model');
+  database = db;
+} catch (error) {
+  databaseError = error;
+  console.error('Database initialization error:', error);
+}
 
 const Stack = createStackNavigator();
 
@@ -44,6 +54,33 @@ function AppNavigator() {
 }
 
 export default function App() {
+  if (databaseError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
+            Database Error
+          </Text>
+          <Text style={{ fontSize: 14, color: 'red', textAlign: 'center' }}>
+            {databaseError.message}
+          </Text>
+          <Text style={{ fontSize: 12, marginTop: 20, textAlign: 'center', color: '#666' }}>
+            {databaseError.stack}
+          </Text>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  if (!database) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Initializing Database...</Text>
+      </View>
+    );
+  }
+
   return (
     <ReduxProvider store={store}>
       <DatabaseProvider database={database}>

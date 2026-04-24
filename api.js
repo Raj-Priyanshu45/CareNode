@@ -4,24 +4,44 @@ import { performSync } from './app/sync';
 
 const BASE_URL =
   Constants.expoConfig?.extra?.BASE_URL ||
-  (__DEV__ ? 'http://10.0.2.2:8080/api' : 'https://your-railway-url.com/api');
+  (__DEV__ ? 'http://10.255.255.254:8080/api' : 'https://your-railway-url.com/api');
 
 const AI_BASE_URL =
   Constants.expoConfig?.extra?.AI_BASE_URL ||
-  (__DEV__ ? 'http://10.0.2.2:8000' : 'https://your-ai-url.com');
+  (__DEV__ ? 'http://10.255.255.254:8000' : 'https://your-ai-url.com');
+
+console.log('API Configuration:', { BASE_URL, AI_BASE_URL });
+console.log('Expo Config Extra:', Constants.expoConfig?.extra);
+console.log('IS_DEV:', __DEV__);
 
 export async function login(username, password) {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, password }),
-  });
-  if (!response.ok) {
-    throw new Error('Login failed');
+  try {
+    const url = `${BASE_URL}/auth/login`;
+    console.log('Login attempt to:', url);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
+    
+    console.log('Login response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Login error response:', errorText);
+      throw new Error(`Login failed: ${response.status} ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Login successful');
+    return data;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
   }
-  return response.json();
 }
 
 export async function fetchPatients(token) {

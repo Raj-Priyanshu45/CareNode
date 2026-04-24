@@ -16,5 +16,4 @@ const adapter = new SQLiteAdapter({
 export const database = new Database({
   adapter,
   modelClasses: [Patient, Encounter, Diagnostic, Worker, SyncLog],
-  actionsEnabled: true,
 });
